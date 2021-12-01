@@ -65,7 +65,7 @@ int main() {
 	char line[40];
 	char word[NUM_WORD][WORD_MAX];    /* 단어들을 저장할 이차원 배열 */
 	int i, num_words;
-	int locctr = 0;
+	int locctr = 0, start_address = 0;
 	int error_check[3] = {0,};
 
 	//file open --- fp1: INPUT, fp2: INTER, fp3: OUTPUT
@@ -79,7 +79,7 @@ int main() {
 	fgets(line, 40, fp1);
 	num_words = word_split(line, word, error_check);
 	if (strcmp(word[1], "START")==0) {
-		locctr = atoi(word[2]);
+		start_address = locctr = atoi(word[2]);
 	}
 	fputs(line, fp2);
 
@@ -100,10 +100,22 @@ int main() {
 
 		//OPCODE가 있다
 		if (error_check[OPCODE] == 1) {
-			//OPCODE가 OPTABLE에 있다.
-
+			//OPCODE가 OPTABLE에 있다 : LOCCTR +=3
+			//OPCODE가 "WORD"다 : LOCCTR +=3
+			//OPCODE가 "RESW"다 : LOCCTR +=3*operand
+			//OPCODE가 "RESB"다 : LOCCTR +=operand
+			//OPCODE가 "BYTE"다 : LOCCTR +=길이
+			//else : error
 		}
+		//intermediate file에 넣고 다음 줄 읽기
 	}
+	//프로그램 길이: LOCCTR-시작 주소
+
+
+	//PASS 2
+
+
+
 	
 	return 0;
 }
