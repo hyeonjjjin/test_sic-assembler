@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_DEPRECATE 
 
 #include<stdio.h>
 #include<string.h>
@@ -12,7 +13,6 @@
 #define LABEL 0 
 #define OPCODE 1
 #define OPERAND 2
-
 
 
 char opcode_s[59][7] = { "ADD", "ADDF","ADDR","AND","CLEAR","COMP","COMPF","COMPR","DIV","DIVF","DIVR","FIX","FLOAT","HIO","J","JEQ","JGT","JLT","JSUB","LDA","LDB","LDCH","LDF","LDL","LDS","LDT","LDX","LPS","MUL","MULF","MULR","NORM","OR","RD","RMO","RSUB","SHIFTL","SHIFTR","SIO","SSK","STA","STB","STCH","STF","STI","STL","STS","STSW","STT","STX","SUB","SUBF","SUBR","SVC","TD","TIO","TIX","TIXR","WD" };
@@ -60,16 +60,39 @@ int word_split(const char *line, char(*word)[WORD_MAX], int *error_check)
 	return words;                // 값이 있는 line 수
 }
 
+int num_of_digits(int n) {
+	if (n == 0) return 1;
+	return floor(log10(n) + 1);
+}
+
+void fill_zero(char* str, int n) {
+	int digit = num_of_digits(n);
+	char zero[7];
+	switch (digit) {
+	case 6: return;
+	case 5: strcpy(zero, "0"); break;
+	case 4: strcpy(zero, "00"); break; // 이거 왜 에러나 str에 starting_address 넣었는데 
+	case 3: strcpy(zero, "000"); break;
+	case 2: strcpy(zero, "0000"); break;
+	case 1: strcpy(zero, "00000"); break;
+	}
+	strcat(zero, str);
+	printf("length: %d", sizeof(zero));
+	strcpy(str, zero);
+}
 
 int main() {
-	char line[40];
+	char line[40], obj_code[82];
 	char word[NUM_WORD][WORD_MAX];    /* 단어들을 저장할 이차원 배열 */
-	int i, num_words;
-	int locctr = 0, start_address = 0;
+	int i, num_words, program_len = 0;
+	int locctr = 0;
+	char start_address[8];
+	char buffer[7];
+	int start_address_n=0;
 	int error_check[3] = {0,};
 
 	//file open --- fp1: INPUT, fp2: INTER, fp3: OUTPUT
-	FILE *fp1, *fp2, *fp3;
+	FILE *fp1, *fp2, *fp3, *fp4;
 	fp1 = fopen("TEST1.txt", "r");
 	fp2 = fopen("INTR1.txt", "w");
 
@@ -79,7 +102,10 @@ int main() {
 	fgets(line, 40, fp1);
 	num_words = word_split(line, word, error_check);
 	if (strcmp(word[1], "START")==0) {
-		start_address = locctr = atoi(word[2]);
+		strcpy(start_address, word[2]);
+		//printf("%d", sizeof(word[2]));
+
+		start_address_n = locctr = atoi(word[2]);
 	}
 	fputs(line, fp2);
 
@@ -110,11 +136,59 @@ int main() {
 		//intermediate file에 넣고 다음 줄 읽기
 	}
 	//프로그램 길이: LOCCTR-시작 주소
+	program_len = locctr - start_address_n;
+	fclose(fp1);
+	fclose(fp2);
 
 
 	//PASS 2
-	 
+	fp3 = fopen("INTR1.txt", "r");
+	fp4 = fopen("OUTPUT1.txt", "w");
+	fgets(line, 40, fp3);
+	num_words = word_split(line, word, error_check);
 
+	//첫 줄에 START 있는지 확인, locctr = if (OPCODE == "START") ? operand : 0 
+	if (strcmp(word[1], "START") == 0) {
+		strcpy(start_address, word[2]);
+		start_address_n = locctr = atoi(word[2]);
+	}
+
+	//Header 작성
+	obj_code[0] = 'H'; obj_code[1] = ' ';
+	fputs("H ", fp4);
+	//program name 
+	fputs(strcat(word[0]," "), fp4);
+
+	//시작주소
+	//앞에 0채우기
+	fill_zero(start_address, start_address_n);
+	fputs(strcat(start_address," "), fp4);
+	printf("%s", start_address);
+
+
+	sprintf(buffer, "%d", program_len);
+	fill_zero(buffer, program_len);
+	fputs(buffer, fp4);
+	int checker = 0, k=0,h=0;
+
+	for (i =0,checker = 2+i; i<strlen(word[0]); i++)
+		obj_code[checker]=word[0][i];
+	obj_code[checker++] = ' ';
+
+	for (i=0, checker +=i ; i < strlen(word[2]); i++)
+		obj_code[checker] = start_address[i];
+	obj_code[checker++] = ' ';
+	/*
+	itoa(program_len, buffer, 10);
+	for (i = 0, checker += i; i < strlen(buffer); i++)
+		obj_code[checker] = buffer[i];
+	obj_code[checker] = '\0';
+*/
+	//Text 작성
+
+	//printf("\n %s",obj_code);
+	fclose(fp4);
+	//fputs(line, fp4);
 
 	
 	return 0;
