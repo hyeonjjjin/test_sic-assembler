@@ -169,21 +169,8 @@ int main() {
 	sprintf(buffer, "%d", program_len);
 	fill_zero(buffer, program_len);
 	fputs(buffer, fp4);
-	int checker = 0, k=0,h=0;
 
-	for (i =0,checker = 2+i; i<strlen(word[0]); i++)
-		obj_code[checker]=word[0][i];
-	obj_code[checker++] = ' ';
 
-	for (i=0, checker +=i ; i < strlen(word[2]); i++)
-		obj_code[checker] = start_address[i];
-	obj_code[checker++] = ' ';
-	/*
-	itoa(program_len, buffer, 10);
-	for (i = 0, checker += i; i < strlen(buffer); i++)
-		obj_code[checker] = buffer[i];
-	obj_code[checker] = '\0';
-*/
 	//Text ÀÛ¼º
 
 	//printf("\n %s",obj_code);
