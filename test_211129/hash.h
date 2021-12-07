@@ -60,7 +60,7 @@ struct node* createNode(long long key, char label[WORD_MAX], int locctr) {
 int hashFunction(long long key) {
     return key % BUCKET_SIZE;
 }
-
+ 
 void add(long long key, char label[WORD_MAX], int locctr) {
     // 어느 버켓에 추가할지 인덱스를 계산
     long long hashIndex = hashFunction(key);
