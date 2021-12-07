@@ -15,9 +15,16 @@
 #define OPCODE 1
 #define OPERAND 2
 
+#define BUCKET_SIZE 600
+
+
 //OPTAB static 형태로 선언. (추가 or 삭제 X)
 char opcode_s[59][7] = { "ADD", "ADDF","ADDR","AND","CLEAR","COMP","COMPF","COMPR","DIV","DIVF","DIVR","FIX","FLOAT","HIO","J","JEQ","JGT","JLT","JSUB","LDA","LDB","LDCH","LDF","LDL","LDS","LDT","LDX","LPS","MUL","MULF","MULR","NORM","OR","RD","RMO","RSUB","SHIFTL","SHIFTR","SIO","SSK","STA","STB","STCH","STF","STI","STL","STS","STSW","STT","STX","SUB","SUBF","SUBR","SVC","TD","TIO","TIX","TIXR","WD" };
 char opcode_n[59][3] = { "18","58","90","40","B4","28","88","A0","24","64","9C","C4","C0","F4","3C","30","34","38","48","00","68","50","70","08","6C","74","04","D0","20","60","98","C8","44","D8","AC","4C","A4","A8","F0","EC","0C","78","54","80","D4","14","7C","E8","84","10","1C","5C","94","B0","E0","F8","2C","B8","DC" };
+
+struct bucket* STMTAB = NULL;
+
+
 
 //함수 정의
 
@@ -34,15 +41,15 @@ void fill_zero(char* str, int n);
 int main() {
 	char line[40], obj_code[82];
 	char word[NUM_WORD][WORD_MAX];    /* 단어들을 저장할 이차원 배열 */
-	int i, num_words, program_len_n = 0;
+	int i, num_words, program_len_n;
 	int locctr = 0;
 	char start_address[8], program_len[8];
 	char buffer[50];
 	int start_address_n=0;
 	int error_check[3] = {0,};
-
-	hashTable = (struct bucket*)malloc(BUCKET_SIZE * sizeof(struct bucket));
-
+	long long key = 0;
+	STMTAB = (struct bucket*)malloc(BUCKET_SIZE * sizeof(struct bucket));
+	
 
 	//file open --- fp1: INPUT, fp2: INTER, fp3: OUTPUT
 	FILE *fp1, *fp2, *fp3, *fp4;
@@ -58,7 +65,7 @@ int main() {
 		strcpy(start_address, word[2]);
 		start_address_n = locctr = atoi(word[2]);
 	}
-
+	add(encode(word[LABEL]), word[LABEL], locctr);
 	//locctr + symbol, opcode, operand 형태로 intermediate file에 저장  /////////////////이거 하면 word split 함수 각각만들어야함
 	//strcpy(buffer, strcat(start_address, " "));
 	//fputs(strcat(buffer, line), fp2);
@@ -72,15 +79,20 @@ int main() {
 		//한 줄 읽어와서 단어 단위로 쪼갬
 		fgets(line, 40, fp1);
 		num_words = word_split(line, word, error_check);
-
+		key = encode(word[LABEL]);
 		//LABEL에 Symbol이 있다.
 		if (error_check[LABEL] == 1) {
 			//symbol table에 있다면 error
+			if (!search(5)) {
+				printf("duplicate symbol error\n\n");
+				return 0;
+			}
 		}
 		else {
 			//symbol table에 {LABEL, LOCCTR} 형태로 저장
+			add(key, word[LABEL], locctr);
 		}
-
+		display();
 		//OPCODE가 있다
 		if (error_check[OPCODE] == 1) {
 			//OPCODE가 OPTABLE에 있다 : LOCCTR +=3
@@ -124,7 +136,6 @@ int main() {
 	fputs(strcat(word[0],"^"), fp4);//program name 
 	fputs(strcat(start_address,"^"), fp4);//시작주소
 	fputs(program_len, fp4);//프로그램 길이
-
 
 	//Text 작성
 
