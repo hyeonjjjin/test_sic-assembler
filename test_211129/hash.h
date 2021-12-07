@@ -1,183 +1,50 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#define WORD_MAX        30
+#define WORD_MAX 30
 #define BUCKET_SIZE 600
-//ÃâÃ³
-/* https://velog.io/@jewelrykim/C%EB%A1%9C-%ED%95%B4%EC%8B%9C%ED%85%8C%EC%9D%B4%EB%B8%94-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0  */
 
-struct bucket* hashTable = NULL;
-
-// ³ëµå ±¸Á¶Ã¼ ¼±¾ð
+// ë…¸ë“œ êµ¬ì¡°ì²´ ì„ ì–¸
 struct node {
-	long long key; // ÇØ½Ã ÇÔ¼ö¿¡ »ç¿ëµÉ Å°
-    char label[WORD_MAX];
-	int locctr; // key °¡ °¡Áö°í ÀÖ´Â µ¥ÀÌÅÍ
-	struct node* next; // ´ÙÀ½ ³ëµå¸¦ °¡¸£Å°´Â Æ÷ÀÎÅÍ
+	long long key; // í•´ì‹œ í•¨ìˆ˜ì— ì‚¬ìš©ë  í‚¤
+	char label[WORD_MAX];
+	int locctr; // key ê°€ ê°€ì§€ê³  ìžˆëŠ” ë°ì´í„°
+	struct node* next; // ë‹¤ìŒ ë…¸ë“œë¥¼ ê°€ë¥´í‚¤ëŠ” í¬ì¸í„°
 };
-// ¹öÄÏ ±¸Á¶Ã¼ ¼±¾ð
+
+// ë²„ì¼“ êµ¬ì¡°ì²´ ì„ ì–¸
 struct bucket {
-	struct node* head; // ¹öÄÏ °¡Àå ¾Õ¿¡ ÀÖ´Â ³ëµåÀÇ Æ÷ÀÎÅÍ
-	int count; // ¹öÄÏ¿¡ µé¾îÀÖ´Â ³ëµåÀÇ °³¼ö
+	struct node* head; // ë²„ì¼“ ê°€ìž¥ ì•žì— ìžˆëŠ” ë…¸ë“œì˜ í¬ì¸í„°
+	int count; // ë²„ì¼“ì— ë“¤ì–´ìžˆëŠ” ë…¸ë“œì˜ ê°œìˆ˜
 };
 
-//ÇÔ¼ö ¼±¾ð
+struct bucket* hashTable;
 
-// ÇØ½¬Å×ÀÌºí »ðÀÔµÉ ¶§ »õ·Î ³ëµå¸¦ »ý¼ºÇØÁÖ´Â ÇÔ¼ö(ÃÊ±âÈ­)
+// í•¨ìˆ˜ ì„ ì–¸
+void HashTableInit();
+
+// í•´ì‰¬í…Œì´ë¸” ì‚½ìž…ë  ë•Œ ìƒˆë¡œ ë…¸ë“œë¥¼ ìƒì„±í•´ì£¼ëŠ” í•¨ìˆ˜(ì´ˆê¸°í™”)
 struct node* createNode(long long key, char label[WORD_MAX], int locctr);
-// ÇØ½¬ÇÔ¼ö ¸¸µé±â. ¿©±â¼­´Â ´Ü¼øÈ÷ key¸¦ ¹öÄÏ ±æÀÌ·Î ³ª´« ³ª¸ÓÁö·Î ÇÔ¼ö¸¦ ¸¸µê.
+
+// í•´ì‰¬í•¨ìˆ˜ ë§Œë“¤ê¸°. ì—¬ê¸°ì„œëŠ” ë‹¨ìˆœížˆ keyë¥¼ ë²„ì¼“ ê¸¸ì´ë¡œ ë‚˜ëˆˆ ë‚˜ë¨¸ì§€ë¡œ í•¨ìˆ˜ë¥¼ ë§Œë“¦.
 int hashFunction(long long key);
-// »õ·Î Å° Ãß°¡ÇÏ´Â ÇÔ¼ö
+
+// ìƒˆë¡œ í‚¤ ì¶”ê°€í•˜ëŠ” í•¨ìˆ˜
 void add(long long key, char label[WORD_MAX], int locctr);
-// Å°¸¦ »èÁ¦ÇØÁÖ´Â ÇÔ¼ö
+
+// í‚¤ë¥¼ ì‚­ì œí•´ì£¼ëŠ” í•¨ìˆ˜
 void remove_key(long long key);
-// Å°¸¦ ÁÖ¸é locctr¸¦ ¾Ë·ÁÁÖ´Â ÇÔ¼ö
+
+// í‚¤ë¥¼ ì£¼ë©´ valueë¥¼ ì•Œë ¤ì£¼ëŠ” í•¨ìˆ˜
 int search(long long key);
-//ÇØ½ÃÅ×ÀÌºí ÀüÃ¼ Ãâ·ÂÇØÁÖ´Â ÇÔ¼ö
+
+// í•´ì‹œí…Œì´ë¸” ì „ì²´ë¥¼ ì¶œë ¥í•´ì£¼ëŠ” í•¨ìˆ˜
 void display();
 
-//label ¹®ÀÚ¿­ ¾ÏÈ£È­, key »ý¼º
 long long encode(char* label);
 
-//void decode(char* src, char* key, char* result);
-
-//ÇÔ¼ö Á¤ÀÇ
-
-struct node* createNode(long long key, char label[WORD_MAX], int locctr) {
-    struct node* newNode;
-    // ¸Þ¸ð¸® ÇÒ´ç
-    newNode = (struct node*)malloc(sizeof(struct node));
-    // »ç¿ëÀÚ°¡ ÀüÇØÁØ °ªÀ» ´ëÀÔ
-    newNode->key = key;
-    strcpy(newNode->label, label);
-    newNode->locctr = locctr;
-    newNode->next = NULL; // »ý¼ºÇÒ ¶§´Â next¸¦ NULL·Î ÃÊ±âÈ­
-
-    return newNode;
-}
-
-int hashFunction(long long key) {
-    return key % BUCKET_SIZE;
-}
- 
-void add(long long key, char label[WORD_MAX], int locctr) {
-    // ¾î´À ¹öÄÏ¿¡ Ãß°¡ÇÒÁö ÀÎµ¦½º¸¦ °è»ê
-    long long hashIndex = hashFunction(key);
-    // »õ·Î ³ëµå »ý¼º
-    struct node* newNode = createNode(key, label,locctr);
-    // °è»êÇÑ ÀÎµ¦½ºÀÇ ¹öÄÏ¿¡ ¾Æ¹« ³ëµåµµ ¾øÀ» °æ¿ì
-    if (hashTable[hashIndex].count == 0) {
-        hashTable[hashIndex].count = 1;
-        hashTable[hashIndex].head = newNode; // head¸¦ ±³Ã¼
-    }
-    // ¹öÄÏ¿¡ ´Ù¸¥ ³ëµå°¡ ÀÖÀ» °æ¿ì ÇÑÄ­¾¿ ¹Ð°í ³»°¡ Çìµå°¡ µÈ´Ù(½ÇÁ¦·Î´Â Æ÷ÀÎÅÍ¸¸ ¹Ù²ãÁÜ)
-    else {
-        newNode->next = hashTable[hashIndex].head;
-        hashTable[hashIndex].head = newNode;
-        hashTable[hashIndex].count++;
-    }
-}
-
-void remove_key(long long key) {
-    long long hashIndex = hashFunction(key);
-    // »èÁ¦°¡ µÇ¾ú´ÂÁö È®ÀÎÇÏ´Â flag ¼±¾ð
-    int flag = 0;
-    // Å°¸¦ Ã£¾ÆÁÙ iterator ¼±¾ð
-    struct node* node = NULL;
-    struct node* before = NULL; // ³ëµå°¡ Áö³ª°£ ¹Ù·Î Àü ³ëµå
-    // ¹öÄÏÀÇ headºÎÅÍ ½ÃÀÛ
-    node = hashTable[hashIndex].head;
-    // ¹öÄÏÀ» ¼øÈ¸ÇÏ¸é¼­ key¸¦ Ã£´Â´Ù.
-    while (node != NULL) // NULL ÀÌ ³ª¿Ã¶§±îÁö ¼øÈ¸
-    {
-        if (node->key == key) {
-            // Æ÷ÀÎÅÍ ¹Ù²ãÁÖ±â ³ëµå°¡ 1 . ÇìµåÀÎ °æ¿ì 2 . Çìµå°¡ ¾Æ´Ñ°æ¿ì
-            if (node == hashTable[hashIndex].head) {
-                hashTable[hashIndex].head = node->next; // ´ÙÀ½ ³ëµå°¡ ÀÌÁ¦ Çìµå
-            }
-            else {
-                before->next = node->next; // Àü³ëµå°¡ ÀÌÁ¦ ³» ´ÙÀ½ ³ëµå¸¦ °¡¸£Å´
-            }
-            // ³ª¸ÓÁö ÀÛ¾÷ ¼öÇà
-            hashTable[hashIndex].count--;
-            free(node);
-            flag = 1;
-        }
-        before = node; // ³ëµå ¹Ù²ãÁÖ±â Àü¿¡ ÀúÀå
-        node = node->next;
-    }
-    // flagÀÇ °ª¿¡ µû¶ó Ãâ·Â ´Ù¸£°Ô ÇØÁÜ
-    if (flag == 1) { // »èÁ¦°¡ µÇ¾ú´Ù¸é
-        printf("\n [ %lld ] ÀÌ/°¡ »èÁ¦µÇ¾ú½À´Ï´Ù. \n", key);
-    }
-    else { // Å°°¡ ¾ø¾î¼­ »èÁ¦°¡ ¾ÈµÈ °æ¿ì
-        printf("\n [ %lld ] ÀÌ/°¡ Á¸ÀçÇÏÁö ¾Ê¾Æ »èÁ¦ÇÏÁö ¸øÇß½À´Ï´Ù.\n", key);
-    }
-}
-
-int search(long long key) {
-    long long hashIndex = hashFunction(key);
-    struct node* node = hashTable[hashIndex].head;
-    int flag = 0;
-    while (node != NULL)
-    {
-        if (node->key == key) {
-            flag = 1;
-            break;
-        }
-        node = node->next;
-    }
-    if (flag == 1) { // Å°¸¦ Ã£¾Ò´Ù¸é
-        printf("\n Å°´Â [ %lld ], °ªÀº [%s, %d ] ÀÔ´Ï´Ù. \n", node->key, node->label, node->locctr);
-        return 1;
-    }
-    else {
-        printf("\n Á¸ÀçÇÏÁö ¾ÊÀº Å°´Â Ã£À» ¼ö ¾ø½À´Ï´Ù. \n");
-        return 0;
-    }
-}
-
-void display() {
-    // ¹Ýº¹ÀÚ ¼±¾ð
-    struct node* iterator;
-    printf("\n========= display start ========= \n");
-    for (int i = 0; i < BUCKET_SIZE; i++) {
-        iterator = hashTable[i].head;
-        printf("Bucket[%d] : ", i);
-        while (iterator != NULL)
-        {
-            printf("(key : %lld, label : %s,val : %d)  -> ", iterator->key, iterator->label, iterator->locctr);
-            iterator = iterator->next;
-        }
-        printf("\n");
-    }
-    printf("\n========= display complete ========= \n");
-}
-
-long long encode(char* label) {
-    int i = 0;
-    char len = 0;
-    long long key_n = 0;
-    int encoder_buff_n = 0;
-    char encoder_buff[WORD_MAX * 2] = { 0, };//¸ðµç ¿µ¹®ÀÚ, ¼ýÀÚ, ¹®ÀÚ´Â 16Áø¼ö·Î µÎÀÚ¸®¾¿ÀÓ
-    char key[WORD_MAX * 2] = { 0, };
-
-    //lineÀÌ ³¡³¯ ¶§ ±îÁö ÇÑ ±ÛÀÚ¾¿ È®ÀÎ
-    for (i = 0; label[i] != '\0'; i++) {
-        encoder_buff_n += label[i];
-    }
-    key[0] = i+ '0';
-    sprintf(encoder_buff, "%X", encoder_buff_n);
-    strcat(key, encoder_buff);
-    key_n = strtol(key, NULL, 16);
-    //printf("%s   ", key);
-    //printf("%X", key_n);
-    return key_n;
-}
-/*
-void decode(char* src, char* key, char* result) {
-
-    encode(src, key, result);
-
-}*/
+// ì¶œì²˜
+/* https://velog.io/@jewelrykim/C%EB%A1%9C-%ED%95%B4%EC%8B%9C%ED%85%8C%EC%9D%B4%EB%B8%94-%EA%B5%AC%ED%98%84%ED%95%98%EA%B8%B0  */
