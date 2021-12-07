@@ -1,11 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_DEPRECATE 
 
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-#include<math.h>
-#include<stdio.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
 #include <stdbool.h>
 #include "hash.h"
 
@@ -14,105 +13,97 @@
 #define LABEL 0 
 #define OPCODE 1
 #define OPERAND 2
-
 #define BUCKET_SIZE 600
 
-
-//OPTAB static ÇüÅÂ·Î ¼±¾ğ. (Ãß°¡ or »èÁ¦ X)
+//OPTAB static í˜•íƒœë¡œ ì„ ì–¸. (ì¶”ê°€ or ì‚­ì œ X)
 char opcode_s[59][7] = { "ADD", "ADDF","ADDR","AND","CLEAR","COMP","COMPF","COMPR","DIV","DIVF","DIVR","FIX","FLOAT","HIO","J","JEQ","JGT","JLT","JSUB","LDA","LDB","LDCH","LDF","LDL","LDS","LDT","LDX","LPS","MUL","MULF","MULR","NORM","OR","RD","RMO","RSUB","SHIFTL","SHIFTR","SIO","SSK","STA","STB","STCH","STF","STI","STL","STS","STSW","STT","STX","SUB","SUBF","SUBR","SVC","TD","TIO","TIX","TIXR","WD" };
 char opcode_n[59][3] = { "18","58","90","40","B4","28","88","A0","24","64","9C","C4","C0","F4","3C","30","34","38","48","00","68","50","70","08","6C","74","04","D0","20","60","98","C8","44","D8","AC","4C","A4","A8","F0","EC","0C","78","54","80","D4","14","7C","E8","84","10","1C","5C","94","B0","E0","F8","2C","B8","DC" };
 
-struct bucket* STMTAB = NULL;
+//í•¨ìˆ˜ ì •ì˜
 
-
-
-//ÇÔ¼ö Á¤ÀÇ
-
-// line ÀĞ¾î¿Í¼­ wordº° ºĞ¸® (word[0:2]). ¾î¶² line °ªÀÌ ÀÖ°í, ¾ø´ÂÁö È®ÀÎ (error_check[0:2])
+// line ì½ì–´ì™€ì„œ wordë³„ ë¶„ë¦¬ (word[0:2]). ì–´ë–¤ line ê°’ì´ ìˆê³ , ì—†ëŠ”ì§€ í™•ì¸ (error_check[0:2])
 int word_split(const char* line, char(*word)[WORD_MAX], int* error_check);
 
-// intÇü °ª input, ÀÚ¸´¼ö return 
+// intí˜• ê°’ input, ìë¦¿ìˆ˜ return 
 int num_of_digits(int n);
 
-// 0 Ã¤¿ì±â. °ª¿¡ °ü°è¾øÀÌ 6ÀÚ¸®·Î Ç¥ÇöµÇµµ·Ï.
+// 0 ì±„ìš°ê¸°. ê°’ì— ê´€ê³„ì—†ì´ 6ìë¦¬ë¡œ í‘œí˜„ë˜ë„ë¡.
 void fill_zero(char* str, int n);
 
 
 int main() {
 	char line[40], obj_code[82];
-	char word[NUM_WORD][WORD_MAX];    /* ´Ü¾îµéÀ» ÀúÀåÇÒ ÀÌÂ÷¿ø ¹è¿­ */
+	char word[NUM_WORD][WORD_MAX];    /* ë‹¨ì–´ë“¤ì„ ì €ì¥í•  ì´ì°¨ì› ë°°ì—´ */
 	int i, num_words, program_len_n;
 	int locctr = 0;
 	char start_address[8], program_len[8];
 	char buffer[50];
-	int start_address_n=0;
-	int error_check[3] = {0,};
+	int start_address_n = 0;
+	int error_check[3] = { 0, };
 	long long key = 0;
-	STMTAB = (struct bucket*)malloc(BUCKET_SIZE * sizeof(struct bucket));
-	
+	HashTableInit();
 
 	//file open --- fp1: INPUT, fp2: INTER, fp3: OUTPUT
-	FILE *fp1, *fp2, *fp3, *fp4;
+	FILE* fp1, * fp2, * fp3, * fp4;
 	fp1 = fopen("TEST1.txt", "r");
 	fp2 = fopen("INTR1.txt", "w");
 
 	//PASS 1
-	
-	//Ã¹ ÁÙ¿¡ START ÀÖ´ÂÁö È®ÀÎ, locctr = if (OPCODE == "START") ? operand : 0 
+
+	//ì²« ì¤„ì— START ìˆëŠ”ì§€ í™•ì¸, locctr = if (OPCODE == "START") ? operand : 0 
 	fgets(line, 40, fp1);
 	num_words = word_split(line, word, error_check);
-	if (strcmp(word[1], "START")==0) {
+	if (strcmp(word[1], "START") == 0) {
 		strcpy(start_address, word[2]);
 		start_address_n = locctr = atoi(word[2]);
 	}
 	add(encode(word[LABEL]), word[LABEL], locctr);
-	//locctr + symbol, opcode, operand ÇüÅÂ·Î intermediate file¿¡ ÀúÀå  /////////////////ÀÌ°Å ÇÏ¸é word split ÇÔ¼ö °¢°¢¸¸µé¾î¾ßÇÔ
+	//locctr + symbol, opcode, operand í˜•íƒœë¡œ intermediate fileì— ì €ì¥  /////////////////ì´ê±° í•˜ë©´ word split í•¨ìˆ˜ ê°ê°ë§Œë“¤ì–´ì•¼í•¨
 	//strcpy(buffer, strcat(start_address, " "));
 	//fputs(strcat(buffer, line), fp2);
 
-	//ÀĞÀº line intermediate file¿¡ ÀúÀå
+	//ì½ì€ line intermediate fileì— ì €ì¥
 	fputs(line, fp2);
 
-	// OPCODE == "END" ±îÁö loop
-	while (strcmp(word[1],"END")) {
-		
-		//ÇÑ ÁÙ ÀĞ¾î¿Í¼­ ´Ü¾î ´ÜÀ§·Î ÂÉ°·
+	// OPCODE == "END" ê¹Œì§€ loop
+	while (strcmp(word[1], "END")) {
+		//í•œ ì¤„ ì½ì–´ì™€ì„œ ë‹¨ì–´ ë‹¨ìœ„ë¡œ ìª¼ê°¬
 		fgets(line, 40, fp1);
 		num_words = word_split(line, word, error_check);
 		key = encode(word[LABEL]);
-		//LABEL¿¡ SymbolÀÌ ÀÖ´Ù.
+
+		//LABELì— Symbolì´ ìˆë‹¤.
 		if (error_check[LABEL] == 1) {
-			//symbol table¿¡ ÀÖ´Ù¸é error
+			//symbol tableì— ìˆë‹¤ë©´ error
 			if (!search(5)) {
 				printf("duplicate symbol error\n\n");
 				return 0;
 			}
 		}
 		else {
-			//symbol table¿¡ {LABEL, LOCCTR} ÇüÅÂ·Î ÀúÀå
+			//symbol tableì— {LABEL, LOCCTR} í˜•íƒœë¡œ ì €ì¥
 			add(key, word[LABEL], locctr);
 		}
 		display();
-		//OPCODE°¡ ÀÖ´Ù
+		//OPCODEê°€ ìˆë‹¤
 		if (error_check[OPCODE] == 1) {
-			//OPCODE°¡ OPTABLE¿¡ ÀÖ´Ù : LOCCTR +=3
-			//OPCODE°¡ "WORD"´Ù : LOCCTR +=3
-			//OPCODE°¡ "RESW"´Ù : LOCCTR +=3*operand
-			//OPCODE°¡ "RESB"´Ù : LOCCTR +=operand
-			//OPCODE°¡ "BYTE"´Ù : LOCCTR +=±æÀÌ
+			//OPCODEê°€ OPTABLEì— ìˆë‹¤ : LOCCTR +=3
+			//OPCODEê°€ "WORD"ë‹¤ : LOCCTR +=3
+			//OPCODEê°€ "RESW"ë‹¤ : LOCCTR +=3*operand
+			//OPCODEê°€ "RESB"ë‹¤ : LOCCTR +=operand
+			//OPCODEê°€ "BYTE"ë‹¤ : LOCCTR +=ê¸¸ì´
 			//else : error
 		}
-		//intermediate file¿¡ ³Ö°í ´ÙÀ½ ÁÙ ÀĞ±â
+		//intermediate fileì— ë„£ê³  ë‹¤ìŒ ì¤„ ì½ê¸°
 	}
-	//ÇÁ·Î±×·¥ ±æÀÌ: LOCCTR-½ÃÀÛ ÁÖ¼Ò
+	//í”„ë¡œê·¸ë¨ ê¸¸ì´: LOCCTR-ì‹œì‘ ì£¼ì†Œ
 	program_len_n = locctr - start_address_n;
 	sprintf(program_len, "%d", program_len_n);
 	fill_zero(program_len, program_len_n);
 
-
 	fclose(fp1);
 	fclose(fp2);
-	// PASS 1 Á¾·á
+	// PASS 1 ì¢…ë£Œ
 
 
 
@@ -122,7 +113,7 @@ int main() {
 	fp4 = fopen("OUTPUT1.txt", "w");
 
 
-	//intr file Ã¹ ÁÙ¿¡ START ÀÖ´ÂÁö È®ÀÎ, locctr = if (OPCODE == "START") ? operand : 0 
+	//intr file ì²« ì¤„ì— START ìˆëŠ”ì§€ í™•ì¸, locctr = if (OPCODE == "START") ? operand : 0 
 	fgets(line, 40, fp3);
 	num_words = word_split(line, word, error_check);
 	if (strcmp(word[1], "START") == 0) {
@@ -131,23 +122,23 @@ int main() {
 		fill_zero(start_address, start_address_n);
 	}
 
-	//Header ÀÛ¼º
+	//Header ì‘ì„±
 	fputs("H^", fp4);//H
-	fputs(strcat(word[0],"^"), fp4);//program name 
-	fputs(strcat(start_address,"^"), fp4);//½ÃÀÛÁÖ¼Ò
-	fputs(program_len, fp4);//ÇÁ·Î±×·¥ ±æÀÌ
+	fputs(strcat(word[0], "^"), fp4);//program name 
+	fputs(strcat(start_address, "^"), fp4);//ì‹œì‘ì£¼ì†Œ
+	fputs(program_len, fp4);//í”„ë¡œê·¸ë¨ ê¸¸ì´
 
-	//Text ÀÛ¼º
+	//Text ì‘ì„±
 
 	//printf("\n %s",obj_code);
 	fclose(fp4);
 	//fputs(line, fp4);
 
-	
+
 	return 0;
 }
 
-//ÇÔ¼ö Á¤ÀÇ
+//í•¨ìˆ˜ ì •ì˜
 
 int word_split(const char* line, char(*word)[WORD_MAX], int* error_check)
 {
@@ -156,37 +147,37 @@ int word_split(const char* line, char(*word)[WORD_MAX], int* error_check)
 	error_check[0] = 0; error_check[1] = 0; error_check[2] = 0;
 	word[0][0] = '\0'; word[1][0] = '\0'; word[2][0] = '\0';
 
-	//lineÀÌ ³¡³¯ ¶§ ±îÁö ÇÑ ±ÛÀÚ¾¿ È®ÀÎ
+	//lineì´ ëë‚  ë•Œ ê¹Œì§€ í•œ ê¸€ìì”© í™•ì¸
 	for (i = 0, chars = 0; line[i] != '\n'; i++) {
 
-		//tab ÀÌ¸é ºñ¿öÁø liner
+		//tab ì´ë©´ ë¹„ì›Œì§„ liner
 		if (line[i] == '\t') {
 			count_space = 0; word[words][0] = '\0'; error_check[words++] = 0;
 		}
 		//space 
 		else if (line[i] == ' ') {
-			if (chars) { // ±ÛÀÚ µÚ spaceÀÌ¸é nullÀÔ·Â
+			if (chars) { // ê¸€ì ë’¤ spaceì´ë©´ nullì…ë ¥
 				word[words][chars] = '\0';
 				error_check[words++] = 1;
 				chars = 0;
 				count_space++;
 			}
 			else {
-				// space 8È¸ÀÌ¸é ºñ¿öÁø line
+				// space 8íšŒì´ë©´ ë¹„ì›Œì§„ line
 				if (++count_space == 4) {
 					word[words][0] = '\0'; error_check[words++] = 0; count_space = 0;
 				}
 			}
 		}
-		//±ÛÀÚ°¡ ÀÖÀ¸¸é word º¯¼ö¿¡ ³Ö¾îÁÜ
+		//ê¸€ìê°€ ìˆìœ¼ë©´ word ë³€ìˆ˜ì— ë„£ì–´ì¤Œ
 		else {
 			count_space = 0;
 			word[words][chars++] = line[i];
 		}
 	}
-	word[words][chars] = '\0';    // ¸¶Áö¸· ´Ü¾îÀÇ NULL ¹®ÀÚ Ãß°¡, °³¼ö Ãß°¡
+	word[words][chars] = '\0';    // ë§ˆì§€ë§‰ ë‹¨ì–´ì˜ NULL ë¬¸ì ì¶”ê°€, ê°œìˆ˜ ì¶”ê°€
 	error_check[words++] = 1;
-	return words;                // °ªÀÌ ÀÖ´Â line ¼ö
+	return words;                // ê°’ì´ ìˆëŠ” line ìˆ˜
 }
 
 int num_of_digits(int n) {
